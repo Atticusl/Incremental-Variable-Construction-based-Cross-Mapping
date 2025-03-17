@@ -28,7 +28,6 @@ for N in range(10,101,10):
         AUC_ic, tpr_ic, fpr_ic, acc_ic = InVaXMap.eva_cri(ic,st[:,:,tr])
         AUC_fc, tpr_fc, fpr_fc, acc_fc = InVaXMap.eva_cri(fc,st[:,:,tr])
         var_dict = {'ic':ic, 'td':td, 'fc':fc, 'ds':ds, 'AUC_ic':AUC_ic, 'tpr_ic':tpr_ic, 'fpr_ic':fpr_ic, 'acc_ic':acc_ic, 'AUC_fc':AUC_fc, 'tpr_fc':tpr_fc, 'fpr_fc':fpr_fc, 'acc_fc':acc_fc}
-        #   savemat(save_path+'result_'+system_type+'_N_'+str(N)+'_trail_' + str(tr) + '.mat', var_dict)
     except:
         print('system_dim: '+str(N)+'; tr='+str(tr)+': Not get result!')
 
