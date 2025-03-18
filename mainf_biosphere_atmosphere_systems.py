@@ -12,7 +12,7 @@ def cal(data, start,end):
     '''
     maxdelay=10; E=3; tau=1; th = 0.35
     G = data[(data['TIMESTAMP']>=start) & (data['TIMESTAMP']<end)].to_numpy()
-    ic, td, fc, ds = InVaXMap.InVaXMap(G = G[:,1:], maxdelay = maxdelay, E = E, tau = tau, th = th)
+    ic, td, fc, _ = InVaXMap.InVaXMap(G = G[:,1:], maxdelay = maxdelay, E = E, tau = tau, th = th)
     return ic, td, fc
 
 
@@ -26,7 +26,7 @@ dic = {
     }
 
 for it in range(len(sites)):
-    df = pd.read_csv('./FLX_'+sites[it]+'_FLUXNET2015_FULLSET_DD_2003-2005_1-4.csv')
+    df = pd.read_csv('Biosphere-atmosphere systems/FLX_'+sites[it]+'_FLUXNET2015_FULLSET_DD_2003-2005_1-4.csv')
     a = df[labels]
 
     ic = np.empty((len(labels)-1,len(labels)-1,len(dic)))
@@ -40,4 +40,3 @@ for it in range(len(sites)):
     ## save as .mat
     # var_dict = {'ic':ic, 'td':td, 'fc':fc}
     # savemat('./result_'+sites[it]+',mat', var_dict)
-    
