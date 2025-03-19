@@ -6,11 +6,7 @@ import InVaXMap
 
 system_type = 'cyc'
 for N in range(10,101,10):
-    file_path = './cyc_ran/'+system_type+'_data/'+system_type+'_N_'+str(N)+'_trails_100.mat'
-    file = loadmat(file_path, mat_dtype=True)
-
-    save_path = './cyc_ran/'+system_type+'_result/'
-
+    file = loadmat('data_path', mat_dtype=True) # replace 'data_path' with actual data directory
     data = file[system_type+'_data']
     st = file[system_type+'_st']
 
