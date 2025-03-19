@@ -5,8 +5,7 @@ import InVaXMap
 
 start = time.time()
 
-file = "./TRAIN_dataset.mat"
-data = loadmat(file, mat_dtype=True)
+data = loadmat('data_path', mat_dtype=True) # replace 'data_path' with actual data directory
 
 data_alc = data['Alcoholic_dataset']
 
