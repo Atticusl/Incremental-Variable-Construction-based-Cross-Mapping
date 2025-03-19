@@ -4,8 +4,7 @@ import time
 import InVaXMap
 
 # selected genes
-file = ".\selected_genes.mat"
-dataset = loadmat(file, mat_dtype=True)
+dataset = loadmat('data_path', mat_dtype=True) # replace 'data_path' with actual data directory
 data = dataset['data']
 st = dataset['st']
 
