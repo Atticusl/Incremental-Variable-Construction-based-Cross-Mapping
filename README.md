@@ -49,3 +49,6 @@ The project is organized as follows:
 
 - **`Multi-species discrete Lotka-Volterra competition model/`**:
   - `data_generation.m`: MATLAB code to generate multi-species discrete Lotka-Volterra competition systems for three modes: cycle mode, random mode, and structural stochastic mode.
+
+## License
+This project is licensed under the MIT License.
