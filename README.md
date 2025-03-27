@@ -20,6 +20,9 @@ The package has been tested on the following systems:
       statsmodels==0.14.0
       scikit-learn==1.3.0
 
+## Installation Guide
+Codes can be directly used while all required libraries are installed.
+
 ## Project Structure
 
 The project is organized as follows:
