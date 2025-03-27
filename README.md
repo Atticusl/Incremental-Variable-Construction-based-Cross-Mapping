@@ -14,6 +14,12 @@ The package has been tested on the following systems:
 - **Python Version**: Python 3.11.7
 - All required libraries are listed in `requirements.txt`
 
+      numpy==1.24.3
+      dcor==0.6
+      scipy==1.11.1
+      statsmodels==0.14.0
+      scikit-learn==1.3.0
+
 ## Project Structure
 
 The project is organized as follows:
