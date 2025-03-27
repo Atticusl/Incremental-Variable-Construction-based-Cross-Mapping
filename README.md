@@ -1,7 +1,16 @@
 # Incremental-Variable-Construction-based-Cross-Mapping
 This is the code for Predicting Direct Causal Links in Complex Systems.
 
-## Environment Dependencies
+## Software Requirements
+
+### OS Requirements
+
+The package has been tested on the following systems:
+
+    Windows
+    Linux
+
+### Python Dependencies
 - **Python Version**: Python 3.11.7
 - All required libraries are listed in `requirements.txt`
 
