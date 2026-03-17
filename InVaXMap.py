@@ -19,7 +19,7 @@ from statsmodels.tsa.ar_model import AutoReg
 from sklearn import gaussian_process
 
 
-def InVaXMap(G, maxdelay, E, tau, th='mean', test_index='parcorr'):
+def InVaXMap(G, maxdelay, E, tau, th='mean', test_index='parcorr', prior=[[],[],[]]):
     '''
     InVaXMap method
 
@@ -59,13 +59,20 @@ def InVaXMap(G, maxdelay, E, tau, th='mean', test_index='parcorr'):
         if th == 'mean':
             th = np.mean(initial[i,:])
         sub = np.linspace(0,n-1,n).astype(int); sub = np.delete(sub,i)
+
         offspring = []
+        pk = prior[i]
+
         k = 1
         while sub.size != 0 or k >= n:
             matrix = np.vstack((sub, -time_delay[i,sub], initial[i,sub]))
             if matrix.size == 0: break
             tar = int(select_var(matrix))
-            if initial[i,tar] > th:
+
+            if tar in pk:
+                 offspring.append(tar)
+            else:
+                if initial[i,tar] > th:
                     if offspring == []:
                         offspring.append(tar)
                     else:
@@ -126,17 +133,109 @@ def PCM(G, maxdelay, E, tau):
     pcm:             Causal matrix with causal_effect[i,j] meaning causal effect from i to j
     '''
 
+    # L = np.size(G,0); n = np.size(G,1)
+    # lag_interval = [-maxdelay,0]
+    # ori_data = G[range(lag_interval[1]+(E-1),L-(-lag_interval[0])),:]
+    # _, _, esti_data = ccm_esti(G, maxdelay, tau, E)
+    # pcm = np.zeros((n,n))
+    # for i in range(n):
+    #     for j in range(n):
+    #         if j != i:
+    #             condition = np.delete(np.linspace(0, n-1, n).astype(int), (i,j))
+    #             pcm[i,j] = partial_corr2(X=ori_data[:,i], Y=esti_data[:,j,i], Z=np.transpose(esti_data[:,condition,i]))
+    # return abs(pcm)
+
     L = np.size(G,0); n = np.size(G,1)
     lag_interval = [-maxdelay,0]
-    ori_data = G[range(lag_interval[1]+(E-1),L-(-lag_interval[0])),:]
-    _, _, esti_data = ccm_esti(G, maxdelay, tau, E)
+
+    oridata = sericapture(data=G, maxdelay=maxdelay, E=E, tau=tau)
+    coridata = sericapture(data=oridata, maxdelay=maxdelay, E=E, tau=tau)
+
+    eccm, _, est1 = ccm_esti(G, maxdelay, tau, E)
+    cest1 = sericapture(est1, maxdelay, E, tau)
+
     pcm = np.zeros((n,n))
     for i in range(n):
         for j in range(n):
             if j != i:
-                condition = np.delete(np.linspace(0, n-1, n).astype(int), (i,j))
-                pcm[i,j] = partial_corr(ori_data[:,i], esti_data[:,j,i], np.transpose(esti_data[:,condition,i]))
-    return abs(pcm)
+                oc = np.delete(np.linspace(0, n-1, n).astype(int), (i,j))
+                s = len(oc)
+                est3 = np.empty((s,np.size(coridata,0)))
+                for k in range(s):
+                    est3[k,:] = lag_causal(oridata[:,i], est1[:,j,oc[k]], lag_interval, tau, E)[2]
+                pcm[i,j] = partial_corr2(coridata[:,i], cest1[:,j,i], est3)
+    return abs(eccm), abs(pcm)
+
+def InVaXMap_NewStrategy(G, maxdelay, E, tau, th='mean', test_index='parcorr',):
+    '''
+    OPC method
+
+    Parameters
+    ----------
+    G: time series. L*n means n processes with series length L
+    max_lag: max time lag
+    tau: time lag, usually setting tau=1 
+    E: embedding dimension
+    th1: threshold of initial casaulity
+    th2: threshold of partial correlation
+    
+    Return
+    ----------
+    Ini_causal: initial causal matrix
+    time_delay: time delay matrix
+    fc: Causal matrix with causal_effect(i,j) meaning causal effect from i to j
+
+    '''
+    L = np.size(G,0); n = np.size(G,1)
+    lag_interval = [-maxdelay,0]
+    ori_data = G[range(lag_interval[1]+(E-1),L-(-lag_interval[0])),:]
+    # Ini_causal, time_delay, esti_data = ccm_esti(G, maxdelay, tau, E)
+    initial, time_delay, esti_data = ccm_esti(G, maxdelay, tau, E)
+
+    fc = np.zeros((n,n))
+    descendant_set = []
+    for i in range(n):
+        if th == 'mean':
+            th = np.mean(initial[i,sub])
+        sub = np.linspace(start=0, stop=n-1, num=n).astype(int); sub = np.delete(sub,i)
+        offspring = []
+        k = 1
+        while sub.size != 0 or k >= n:
+            matrix = np.vstack((sub, initial[i,sub]))
+            if matrix.size == 0: break
+            var = int(select_var_new(matrix))
+            if initial[i, var] > th:
+                if offspring == []:
+                    offspring.append(var)
+                else:
+                    r = partial_corr(ori_data[:,i], esti_data[:,var,i], np.transpose(esti_data[:,offspring,i]))
+                    if np.abs(r) > th:
+                        offspring.append(var)
+            sub = np.delete(sub, sub==var)
+            k += 1
+
+        if len(offspring) == 0:
+            fc[i,:] = initial[i,:]
+        else:
+            for j in range(n):
+                if j != i:
+                    if j in offspring:
+                        oc = copy.deepcopy(offspring)
+                        oc.remove(j)
+                    else:
+                        oc = copy.deepcopy(offspring)
+
+                    if test_index == 'parcorr':
+                        fc[i,j] = partial_corr(ori_data[:,i], esti_data[:,j,i], np.transpose(esti_data[:,oc,i]))
+                    elif test_index == 'gpdc':
+                        if len(oc) == 0:
+                            fc[i,j] = GPDC(X=ori_data[:,i], Y=esti_data[:,j,i], Z=[])
+                        else:
+                            fc[i,j] = GPDC(X=ori_data[:,i], Y=esti_data[:,j,i], Z=np.transpose(esti_data[:,oc,i]))
+                    elif test_index == 'cmiknn':
+                        fc[i,j] = CMIknn(X=ori_data[:,i].reshape((-1,1)), Y=esti_data[:,j,i].reshape((-1,1)), Z=esti_data[:,oc,i], k=20)
+        descendant_set.append(offspring)
+    return abs(initial), time_delay, abs(fc), descendant_set
 
 def InVaXMap_first_order(G, maxdelay, E, tau=1, th='mean'):
     n = np.size(G,1)
@@ -364,6 +463,29 @@ def partial_corr_calculation(x):
         r = (r1-r2*r3) / (np.sqrt(1-r2**2)*np.sqrt(1-r3**2))
     return r
 
+def partial_corr2(X, Y, Z=[], standardize=True):
+    """GPDC method
+
+    Args:
+        X (_type_):            target variable with the size series length (L)
+        Y (_type_):            target variable with the size series length (L)
+        Z (_type_):            condition variable with the size dim (N) * series length (L)
+        standardize (bool, optional):   standardize the input data. Defaults to True.
+
+    Returns:
+        _type_: GPDC index between X condition on Z
+    """
+
+    if Z == []:
+        residus1 = GaussianProcess(X=X, Z=Y, standardize=standardize)
+        residus2 = GaussianProcess(X=Y, Z=X, standardize=standardize)
+    else:
+        residus1 = GaussianProcess(X=X.reshape(1,-1), Z=Z, standardize=standardize)
+        residus2 = GaussianProcess(X=Y.reshape(1,-1), Z=Z, standardize=standardize)
+
+    val = stats.pearsonr(residus1.ravel(), residus2.ravel())[0]
+    return val
+
 def GPDC(X, Y, Z=[], standardize=True):
     """GPDC method
 
@@ -514,7 +636,12 @@ def NNSearch(points, target, k):
 
 def select_var(matrix):
     min_column_numbers = [i for i, value in enumerate(matrix[1]) if value == min(matrix[1])]
-    selection = matrix[0,min_column_numbers[np.argmax(matrix[2,min_column_numbers])]]
+    selection = matrix[0, min_column_numbers[np.argmax(matrix[2,min_column_numbers])]]
+    return selection
+
+def select_var_new(matrix):
+    max_column_numbers = [i for i, value in enumerate(matrix[1]) if value == max(matrix[1])]
+    selection = matrix[0, max_column_numbers]
     return selection
 
 def sericapture(data,maxdelay,E,tau=1):
