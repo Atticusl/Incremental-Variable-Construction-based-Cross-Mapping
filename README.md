@@ -1,5 +1,5 @@
 # Incremental-Variable-Construction-based-Cross-Mapping
-This is the code for Predicting Direct Causal Links in Complex Systems.
+This is the code for Predicting Physical Links in Networks.
 
 ## Software Requirements
 
