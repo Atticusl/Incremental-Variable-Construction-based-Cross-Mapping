@@ -1,5 +1,5 @@
 # Incremental-Variable-Construction-based-Cross-Mapping
-This is the code for Predicting Physical Links in Networks.
+This is the code for [Predicting Physical Links in Networks](https://journals.aps.org/prx/abstract/10.1103/kkwg-kv4c).
 
 ## Software Requirements
 
@@ -49,6 +49,28 @@ The project is organized as follows:
 
 - **`Multi-species discrete Lotka-Volterra competition model/`**:
   - `data_generation.m`: MATLAB code to generate multi-species discrete Lotka-Volterra competition systems for three modes: cycle mode, random mode, and structural stochastic mode.
+
+## Citation
+
+If you use this code or the InVaXMap method in your research, please cite:
+
+**BibTeX:**
+```bibtex
+@article{kkwg-kv4c,
+  title = {Predicting Physical Links in Networks},
+  author = {Li, Shuai and Chen, Wei and Nagler, Jan},
+  journal = {Physical Review X},
+  volume = {16},
+  issue = {2},
+  pages = {021048},
+  numpages = {41},
+  year = {2026},
+  month = {Jun},
+  publisher = {American Physical Society},
+  doi = {10.1103/kkwg-kv4c},
+  url = {https://link.aps.org/doi/10.1103/kkwg-kv4c}
+}
+```
 
 ## License
 This project is licensed under the MIT License.
